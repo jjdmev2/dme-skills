@@ -1,0 +1,7 @@
+{
+  "name": "dme",
+  "description": "dME Linear + agent workflow: /linearthis (author epics + sub-issues) and /ccthis (execute an epic end-to-end and auto-export the full transcript to the epic).",
+  "author": { "name": "dME Network" },
+  "version": "0.1.0",
+  "homepage": "https://github.com/dmenetwork/dme-cc"
+}
