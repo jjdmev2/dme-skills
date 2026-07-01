@@ -1,14 +1,17 @@
 ---
-description: Turn a rough idea/brainstorm into well-formed Linear epic(s) + sub-issues (asks a few questions, defines acceptance criteria, creates the tree) — ready to assign and run with /ccthis
-argument-hint: <a rough idea or project name — or just run it after brainstorming in chat>
+name: linearthis
+description: "Turn a rough idea or a messy/unstructured backlog into well-formed Linear epic(s) + sub-issues with acceptance criteria — asks a few questions if it's fuzzy, previews the tree, then creates it. Ready to assign and run with /ccthis. Use when the user types /linearthis, wants to structure an idea/backlog, or plan work in Linear. (dme)"
+version: 0.2.0
 ---
+
+# linearthis
 
 You are turning a rough idea into a clean Linear plan that another teammate can pick up and run
 with `/ccthis`. Do NOT write code. Your output is Linear structure: epic(s) + sub-issues.
 
-**Input:** $ARGUMENTS
-(A rough idea, a feature name, or a project name. If empty, use the current brainstorm in this
-conversation as the input.)
+**Input:** whatever the user gave when invoking this skill — a rough idea, a feature name, or a
+project name (e.g. `/linearthis add branded share links to Reus`). If nothing was given, use the
+current brainstorm in the conversation as the input.
 
 ## Tooling — use what's installed, never leave a step empty
 Prefer gstack skills when available. If the idea is fuzzy, use `/spec` to harden it into acceptance
@@ -60,4 +63,4 @@ Use `/spec` if available to deepen this. Keep it tight — don't interrogate.
 
 ## Phase 5 — Handoff
 Report the created **epic IDs + URLs** and their sub-issue counts. Tell the user:
-"Assign each epic, then the owner runs **`/dme:ccthis <EPIC-ID>`** to build, ship, and auto-attach the transcript."
+"Assign each epic, then the owner runs **`/ccthis <EPIC-ID>`** to build, ship, and auto-attach the transcript."

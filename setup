@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# dme setup — wires the transcript hook + Linear MCP after cloning into ~/.claude/skills/.
+# Safe + idempotent. Re-run any time (e.g. after `git pull`).
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+
+echo "→ dme skills at: $ROOT"
+echo "  Available next session:  /ccthis   /linearthis   /dme-upgrade"
+chmod +x "$ROOT/scripts/session-hook.sh" 2>/dev/null || true
+
+echo "→ Registering the transcript hook in ~/.claude/settings.json (backs up first, idempotent)…"
+node - "$HOME/.claude/settings.json" "$ROOT/scripts/session-hook.sh" <<'NODE'
+const fs = require('fs'), path = require('path');
+const [file, hook] = process.argv.slice(2);
+let s = {};
+if (fs.existsSync(file)) {
+  const raw = fs.readFileSync(file, 'utf8');
+  try { s = JSON.parse(raw); }
+  catch { fs.writeFileSync(file + '.bak', raw); console.error('  ! settings.json invalid — wrote ' + file + '.bak, made NO changes.'); process.exit(1); }
+  fs.writeFileSync(file + '.bak', raw);
+}
+s.hooks = s.hooks || {};
+const cmd = { type: 'command', command: `bash "${hook}"` };
+for (const ev of ['SessionStart', 'UserPromptSubmit']) {
+  s.hooks[ev] = s.hooks[ev] || [];
+  if (!JSON.stringify(s.hooks[ev]).includes(hook)) s.hooks[ev].push({ hooks: [cmd] });
+}
+fs.mkdirSync(path.dirname(file), { recursive: true });
+fs.writeFileSync(file, JSON.stringify(s, null, 2));
+console.log('  ✓ hook registered');
+NODE
+
+echo "→ Linear MCP (user scope)…"
+if command -v claude >/dev/null 2>&1; then
+  claude mcp add --transport http --scope user linear https://mcp.linear.app/mcp 2>/dev/null \
+    && echo "  ✓ added" || echo "  (already present — run /mcp to log in)"
+else
+  echo "  ! Claude Code CLI not found. Add later with:"
+  echo "    claude mcp add --transport http --scope user linear https://mcp.linear.app/mcp"
+fi
+
+cat <<'NEXT'
+
+Done. Finish in Claude Code:
+  1. /mcp   → authenticate to Linear (one-time)
+  2. make sure gstack is installed (the flows call /spec, /code-review, /ship, /codex…)
+Then, in any repo:  /linearthis <idea>   and   /ccthis <EPIC-ID>
+Update anytime:     /dme-upgrade
+NEXT

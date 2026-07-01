@@ -1,14 +1,17 @@
 ---
-description: CC this Linear epic (or issue) end-to-end — ONE branch/PR per EPIC, then auto-export the full transcript to the epic
-argument-hint: <LINEAR-ID, e.g. ENG-45 (epic) or KIS-123 (issue)>
+name: ccthis
+description: "Complete a Linear epic (or issue) end-to-end — build with gstack, ship ONE PR per epic, keep Linear updated, and auto-attach the full session transcript to the epic for traceability. Use when the user types /ccthis, says \"cc this issue/epic\", or hands over a Linear ID to execute. (dme)"
+version: 0.2.0
 ---
 
-You are completing Linear work end-to-end. Linear is the single source of truth — keep it
-updated the WHOLE time, not just at the end. This command is self-contained: the standard is below.
+# ccthis
 
-**Target:** $ARGUMENTS
-(A Linear epic or issue ID such as ENG-45 / KIS-123. If a file path like `LINEAR.md` is given,
-read that file as the spec.)
+You are completing Linear work end-to-end. Linear is the single source of truth — keep it
+updated the WHOLE time, not just at the end.
+
+**Target:** the Linear epic or issue ID the user gave when invoking this skill (e.g. `/ccthis ENG-45`
+→ `ENG-45`). If a file path like `LINEAR.md` was given, read it as the spec. If nothing was given,
+ask which epic/issue to work.
 
 ## Tooling — use what's installed, never leave a step empty
 Prefer gstack skills when available (`/spec`, `/autoplan`, `/investigate`, `/code-review`, `/review`,
@@ -29,9 +32,9 @@ Never skip a phase because one tool is missing.
 ## Phase 0 — Load
 - Fetch the target from Linear (`get_issue`); read description + acceptance criteria in full.
 - If it's an **EPIC**: list ALL its sub-issues — complete every one on a SINGLE branch. If it's a
-  standalone issue with no epic, treat that issue as the unit (and attach the transcript to it).
+  standalone issue with no epic, treat that issue as the unit (attach the transcript to it).
 - Read linked specs and relevant code so you follow existing patterns.
-- Set the epic **In Progress** (and each sub-issue as you start it); assign it to me.
+- Set the epic **In Progress** (and each sub-issue as you start it); assign it to the user.
 - Create **ONE branch for the epic** and do all the work on it.
 
 ## Phase 1 — Plan (gstack, as needed)
@@ -78,15 +81,15 @@ was attached.
 1. Render THIS session to markdown. Locate the converter (first that exists) — it auto-detects this session:
    ```bash
    CONV="$HOME/.claude/dme/bin/transcript-to-md.mjs"
-   [ -f "$CONV" ] || CONV="${CLAUDE_PLUGIN_ROOT:-}/scripts/transcript-to-md.mjs"
-   [ -f "$CONV" ] || CONV="$(find "$HOME/.claude" "$HOME" -name transcript-to-md.mjs 2>/dev/null | head -1)"
+   [ -f "$CONV" ] || CONV="$HOME/.claude/skills/dme-cc/scripts/transcript-to-md.mjs"
+   [ -f "$CONV" ] || CONV="$(find "$HOME/.claude" -name transcript-to-md.mjs 2>/dev/null | head -1)"
    OUT="/tmp/ccthis-<ISSUE>-transcript.md"
    node "$CONV" --out "$OUT"
    ```
    - If it errors "could not identify THIS session's transcript", pass the recorded path explicitly:
      `node "$CONV" --file "$(cat "$HOME/.claude/dme/last-transcript.path")" --out "$OUT"`.
-   - If the converter truly can't be found or the output is empty, DON'T skip traceability — ask me to run
-     `/export` and attach the file manually.
+   - If the converter truly can't be found or the output is empty, DON'T skip traceability — ask the user
+     to run `/export` and attach the file manually.
 2. Verify + measure (do NOT edit/re-render after this): `test -s "$OUT" && wc -c < "$OUT"` → this is `<bytes>` (>0).
 3. Upload to `<ISSUE>` via the Linear MCP. Run prepare → PUT **back-to-back with nothing in between**
    (the signed URL expires in 60s):
