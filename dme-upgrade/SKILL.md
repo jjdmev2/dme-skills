@@ -1,7 +1,7 @@
 ---
 name: dme-upgrade
-description: "Update the dme skills (/ccthis, /linearthis) to the latest version from GitHub. Use when the user asks to update or upgrade dme. (dme)"
-version: 0.2.0
+description: "Update the dme skills (/linearthis, /ccthis, /chonchi) to the latest version from GitHub. Use when the user asks to update or upgrade dme. (dme)"
+version: 0.3.0
 ---
 
 # dme-upgrade

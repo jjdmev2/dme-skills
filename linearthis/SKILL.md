@@ -1,7 +1,7 @@
 ---
 name: linearthis
 description: "Turn a rough idea or a messy/unstructured backlog into well-formed Linear epic(s) + sub-issues with acceptance criteria — asks a few questions if it's fuzzy, previews the tree, then creates it. Ready to assign and run with /ccthis. Use when the user types /linearthis, wants to structure an idea/backlog, or plan work in Linear. (dme)"
-version: 0.2.0
+version: 0.3.0
 ---
 
 # linearthis
@@ -63,4 +63,5 @@ Use `/spec` if available to deepen this. Keep it tight — don't interrogate.
 
 ## Phase 5 — Handoff
 Report the created **epic IDs + URLs** and their sub-issue counts. Tell the user:
-"Assign each epic, then the owner runs **`/ccthis <EPIC-ID>`** to build, ship, and auto-attach the transcript."
+"Assign each epic, then the owner runs **`/ccthis <EPIC-ID>`** to build and ship it — and **`/chonchi <EPIC-ID>`**
+once it's tested, to move it to In Review and attach the full transcript + branch link for team review."
