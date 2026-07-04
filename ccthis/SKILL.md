@@ -1,13 +1,17 @@
 ---
 name: ccthis
-description: "Complete a Linear epic (or issue) end-to-end — build with gstack, ship ONE PR per epic, keep Linear updated, and auto-attach the full session transcript to the epic for traceability. Use when the user types /ccthis, says \"cc this issue/epic\", or hands over a Linear ID to execute. (dme)"
-version: 0.2.0
+description: "Build a Linear epic (or issue) end-to-end — set it In Progress, build with gstack, move sub-issues as you go, keep Linear updated, and ship ONE PR per epic. Building is a multi-turn conversation (you review + give feedback); when it's tested and ready for the team, hand off with /chonchi. Use when the user types /ccthis, says \"cc this issue/epic\", or hands over a Linear ID to execute. (dme)"
+version: 0.3.0
 ---
 
 # ccthis
 
-You are completing Linear work end-to-end. Linear is the single source of truth — keep it
-updated the WHOLE time, not just at the end.
+You are building Linear work end-to-end. Linear is the single source of truth — keep it
+updated the WHOLE time, not just at the end. This is a **multi-turn conversation**: you build, the user
+reviews and gives feedback, you iterate. When the work is finished and the user has tested it, they run
+**`/chonchi <ISSUE>`** to hand off for team review (move to In Review, comment, attach the full transcript,
+and add the branch/commit link). Do NOT try to export the transcript or close things out from here —
+that belongs to `/chonchi`, at the end.
 
 **Target:** the Linear epic or issue ID the user gave when invoking this skill (e.g. `/ccthis ENG-45`
 → `ENG-45`). If a file path like `LINEAR.md` was given, read it as the spec. If nothing was given,
@@ -21,20 +25,22 @@ Never skip a phase because one tool is missing.
 
 ## The standard (always enforce)
 - Hierarchy: `Project → Milestone → Epic (parent issue, label `epic`) → Sub-issue`.
-- **Branch, PR, and the transcript export are per EPIC — NOT per sub-issue.** One epic = one branch =
-  one PR = one attached transcript. Sub-issues are the checklist worked inside that single branch.
+- **Branch and PR are per EPIC — NOT per sub-issue.** One epic = one branch = one PR. Sub-issues are the
+  checklist worked inside that single branch.
 - **No flat issues.** An epic has ≥2 sub-issues; a childless `[Epic]` title is a bug.
 - **Sub-issue body:** `## Problem` / `## Acceptance Criteria` (checkboxes) / `## Non-goals`.
 - **Labels:** one type (`Feature`/`Improvement`/`Bug`) + `epic` on epics + `platform:*` / gates as needed.
 - **Definition of Done (epic-level):** every sub-issue's acceptance criteria checked · ONE PR linked to
-  the epic · full transcript attached to the epic/issue (Phase 6) · merged/deployed or follow-ups filed.
+  the epic · user has tested it · handed off for review with `/chonchi` (In Review + full transcript +
+  branch/commit link) · merged/deployed or follow-ups filed.
 
 ## Phase 0 — Load
 - Fetch the target from Linear (`get_issue`); read description + acceptance criteria in full.
 - If it's an **EPIC**: list ALL its sub-issues — complete every one on a SINGLE branch. If it's a
-  standalone issue with no epic, treat that issue as the unit (attach the transcript to it).
+  standalone issue with no epic, treat that issue as the unit (that's what `/chonchi` hands off later).
 - Read linked specs and relevant code so you follow existing patterns.
-- Set the epic **In Progress** (and each sub-issue as you start it); assign it to the user.
+- Set the epic **In Progress** if it isn't already; assign it to the user. Move sub-issues freely across
+  statuses (Todo → In Progress → Done) as you pick them up and finish them — keep Linear mirroring reality.
 - Create **ONE branch for the epic** and do all the work on it.
 
 ## Phase 1 — Plan (gstack, as needed)
@@ -64,45 +70,21 @@ Work through the epic's sub-issues on the single epic branch:
 - Attach the PR link to the **EPIC**.
 
 ## Phase 5 — Update Linear (source of truth)
-- Ensure every sub-issue is **Done** with its comment.
-- Move the **EPIC** to **Done** once all sub-issues are done and the PR is merged.
+- Ensure every sub-issue is **Done** with its comment (what changed + AC checked).
 - On the **PROJECT**: a high-level **executive-summary** status update (delivered, impact, next).
 - Set/clean tags & labels. File follow-up issues for anything deferred.
+- **Leave the EPIC In Progress.** Do NOT move it to Done or In Review here — the user still reviews and tests.
+  The review handoff (In Review + transcript + branch link) is `/chonchi`'s job, run once at the very end.
 
-## Phase 6 — FULL transcript → the epic (automatic, NO /export, NO re-run)
-This attaches the same content `/export` would produce — automatically. Do NOT ask the user to run `/export`.
-Throughout, `<ISSUE>` = the EPIC (or the standalone issue from Phase 0 if there is no epic).
+## Phase 6 — Hand off for review (via /chonchi)
+When the work is finished and **the user has tested it**, the review handoff is a separate, deliberate step
+so the exported transcript captures the WHOLE conversation (not a mid-session snapshot). Do NOT export the
+transcript or move the issue to In Review from here.
 
-⚠️ **Secrets:** the transcript captures everything printed this session — including any secrets echoed to
-the terminal (tokens, `.env` values, keys, signed URLs). Skim the rendered file and redact obvious secrets
-before uploading, OR confirm the epic/workspace is private. Note in your final summary that a full transcript
-was attached.
+Tell the user:
+> Ready for the team? Run **`/chonchi <ISSUE>`** — it moves the issue to **In Review**, comments a summary,
+> attaches the **full session transcript**, and adds the **branch/commit link** so the nightly code review
+> (codex/another agent) can pick it up.
 
-1. Render THIS session to markdown. Locate the converter (first that exists) — it auto-detects this session:
-   ```bash
-   CONV="$HOME/.claude/dme/bin/transcript-to-md.mjs"
-   [ -f "$CONV" ] || CONV="$HOME/.claude/skills/dme-cc/scripts/transcript-to-md.mjs"
-   [ -f "$CONV" ] || CONV="$(find "$HOME/.claude" -name transcript-to-md.mjs 2>/dev/null | head -1)"
-   OUT="/tmp/ccthis-<ISSUE>-transcript.md"
-   node "$CONV" --out "$OUT"
-   ```
-   - If it errors "could not identify THIS session's transcript", pass the recorded path explicitly:
-     `node "$CONV" --file "$(cat "$HOME/.claude/dme/last-transcript.path")" --out "$OUT"`.
-   - If the converter truly can't be found or the output is empty, DON'T skip traceability — ask the user
-     to run `/export` and attach the file manually.
-2. Verify + measure (do NOT edit/re-render after this): `test -s "$OUT" && wc -c < "$OUT"` → this is `<bytes>` (>0).
-3. Upload to `<ISSUE>` via the Linear MCP. Run prepare → PUT **back-to-back with nothing in between**
-   (the signed URL expires in 60s):
-   - `prepare_attachment_upload { issue: "<ISSUE>", filename: "ccthis-<ISSUE>-transcript.md", contentType: "text/markdown", size: <bytes>, title: "Claude Code transcript (ccthis)" }`
-   - PUT the bytes, **single-quoting** every header from `uploadRequest.headers` verbatim (values like
-     `Content-Disposition` contain double-quotes, so single-quote them to survive the shell; copy byte-for-byte):
-     ```bash
-     curl -X PUT --data-binary @"$OUT" \
-       -H '<k1>: <v1>' -H '<k2>: <v2>' [...every header...] \
-       -w '%{http_code}' -o /dev/null -sS "<uploadRequest.url>"
-     ```
-     Confirm the printed code is 2xx. If it's 403/expired, re-run `prepare_attachment_upload` and PUT again.
-   - Only after a 2xx PUT: `create_attachment_from_upload { issue: "<ISSUE>", assetUrl: "<assetUrl>", title: "Claude Code transcript (ccthis)" }`
-4. Confirm: issue **Done** ✅ · one PR linked ✅ · executive summary on project ✅ · **full transcript attached** ✅.
-
-Finish with a short summary: epic completed, sub-issues closed, PR link, and the attached transcript.
+Finish with a short summary: what was built, sub-issues closed, the PR link, and the `/chonchi <ISSUE>`
+next step.

@@ -5,7 +5,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 
 echo "→ dme skills at: $ROOT"
-echo "  Available next session:  /ccthis   /linearthis   /dme-upgrade"
+echo "  Available next session:  /linearthis   /ccthis   /chonchi   /dme-upgrade"
 chmod +x "$ROOT/scripts/session-hook.sh" 2>/dev/null || true
 
 echo "→ Registering the transcript hook in ~/.claude/settings.json (backs up first, idempotent)…"
@@ -44,6 +44,9 @@ cat <<'NEXT'
 Done. Finish in Claude Code:
   1. /mcp   → authenticate to Linear (one-time)
   2. make sure gstack is installed (the flows call /spec, /code-review, /ship, /codex…)
-Then, in any repo:  /linearthis <idea>   and   /ccthis <EPIC-ID>
-Update anytime:     /dme-upgrade
+Then, in any repo:
+  /linearthis <idea>     → plan epics + sub-issues
+  /ccthis <EPIC-ID>      → build + ship (multi-turn; you review as you go)
+  /chonchi <EPIC-ID>     → when tested: In Review + full transcript + branch link for team review
+Update anytime:          /dme-upgrade
 NEXT
