@@ -3,8 +3,10 @@
 Claude Code skills that make the whole team work the same way in Linear — plan → build → hand off for
 review — plus **automatic full-transcript export** so finished work is auditable.
 
-- **`/linearthis <idea>`** — turn a rough idea (or a messy backlog) into proper **epics + sub-issues**
-  with acceptance criteria. Asks a few questions if it's fuzzy, previews the tree, then creates it. Ready to assign.
+- **`/linearthis <idea>`** — an **adaptive brainstorming partner** that shapes work *with* you into proper
+  **epics + sub-issues** with acceptance criteria. Pressure-tests a fuzzy idea or just confirms a sharp one,
+  previews the tree, then creates it (with or without an existing epic). Pairs with gstack `/office-hours`.
+  Ready to assign.
 - **`/ccthis <epic>`** — the owner **builds** an epic: gstack, **one branch / one PR per epic**, sub-issues
   moved as you go, Linear kept in sync. It's a multi-turn conversation — you review and iterate.
 - **`/chonchi <epic>`** — the **review handoff**, run once when the work is tested and ready for the team.
