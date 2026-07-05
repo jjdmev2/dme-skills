@@ -2,6 +2,15 @@
 
 All notable changes to the dme skills. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.3.2] — 2026-07-05
+### Changed
+- **`/linearthis` is now an adaptive brainstorming partner**, not just a backlog formatter. It gauges how
+  formed the idea is and does the right amount — lightly confirms a sharp idea (e.g. one that came out of
+  gstack `/office-hours`), or brainstorms a fuzzy one to clarity before shaping the tree. Works **with or
+  without an existing epic** (restructures a malformed epic in place instead of duplicating). Framed as
+  complementary to `/office-hours`: that thinks the idea through, `/linearthis` lands it in the right Linear
+  form.
+
 ## [0.3.1] — 2026-07-04
 ### Changed
 - **`/chonchi` runs bare by default** — no issue ID needed. Since you've been building one epic on one branch

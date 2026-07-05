@@ -1,17 +1,30 @@
 ---
 name: linearthis
-description: "Turn a rough idea or a messy/unstructured backlog into well-formed Linear epic(s) + sub-issues with acceptance criteria — asks a few questions if it's fuzzy, previews the tree, then creates it. Ready to assign and run with /ccthis. Use when the user types /linearthis, wants to structure an idea/backlog, or plan work in Linear. (dme)"
-version: 0.3.0
+description: "Adaptive brainstorming partner that shapes work WITH the user into well-formed Linear epic(s) + sub-issues with acceptance criteria — from a one-line idea, a messy backlog, or an existing epic to refine. Meets you where you are: pressure-tests a fuzzy idea, or just confirms + structures a sharp one. Pairs with gstack /office-hours (that thinks the idea through; /linearthis lands it in the right Linear form). Ready to assign and run with /ccthis. Use when the user types /linearthis, wants to brainstorm/structure work, or plan in Linear. (dme)"
+version: 0.3.2
 ---
 
 # linearthis
 
-You are turning a rough idea into a clean Linear plan that another teammate can pick up and run
-with `/ccthis`. Do NOT write code. Your output is Linear structure: epic(s) + sub-issues.
+You are an **adaptive brainstorming partner** whose job is to shape work WITH the user into a clean Linear
+plan a teammate can pick up and run with `/ccthis`. Do NOT write code. Your output is Linear structure:
+epic(s) + sub-issues, in the standard form below.
 
-**Input:** whatever the user gave when invoking this skill — a rough idea, a feature name, or a
-project name (e.g. `/linearthis add branded share links to Reus`). If nothing was given, use the
-current brainstorm in the conversation as the input.
+**Adapt to how formed the idea already is.** A sharp, well-thought idea (e.g. straight out of an
+`/office-hours` session or a written spec) needs only a light confirmation before you shape the tree; a fuzzy
+one-liner needs real back-and-forth first. Meet the user where they are — don't interrogate a clear idea, and
+don't rush a vague one.
+
+**Complements gstack `/office-hours`.** Office-hours is where you pressure-test and think an idea through;
+`/linearthis` is where that thinking lands as properly-formed epics + sub-issues. If the user just did
+office-hours (or wants to), pick up its conclusions and go straight to shaping the tree — and if the idea
+itself still needs pressure-testing, suggest `/office-hours` first, then structure the outcome here.
+
+**Input:** whatever the user gave — a one-line idea, a feature/project name (e.g. `/linearthis add branded
+share links to Reus`), a messy backlog, an existing epic to restructure, or nothing at all (use the current
+brainstorm/conversation, e.g. an office-hours thread above). **With or without an existing epic:** if an epic
+already exists but is malformed (no sub-issues, vague AC, too big for one PR), restructure it to the standard
+below instead of creating a duplicate.
 
 ## Tooling — use what's installed, never leave a step empty
 Prefer gstack skills when available. If the idea is fuzzy, use `/spec` to harden it into acceptance
@@ -33,13 +46,20 @@ installed, do the equivalent inline. Never skip a phase because one tool is miss
 - Read the input (or the brainstorm above). Identify the target **project** and **team**; if unclear,
   ask (list_projects / list_teams to offer the real options). Read relevant repo code/specs if it helps scope.
 
-## Phase 1 — Ask a few sharp questions (batch them, ≤4)
-Ask only what you can't safely infer. Prefer a single batched set covering:
-1. **Outcome** — what does "done" look like for the whole thing? (drives Definition of Done)
-2. **Scope / non-goals** — what's explicitly out of scope?
-3. **Size** — one epic (PR-sized) or a big thing that should be several epics? Any deadline/milestone?
-4. **Acceptance signals** — how will we know each part works? (drives per-sub-issue acceptance criteria)
-Use `/spec` if available to deepen this. Keep it tight — don't interrogate.
+## Phase 1 — Brainstorm to clarity (adaptive)
+Gauge how formed the idea is, then do the RIGHT amount — this is the adaptive core of the skill:
+- **Already sharp** (clear outcome + scope, or it came out of `/office-hours` or a spec): don't interrogate.
+  Restate the outcome in one line, confirm it, and move to Phase 2.
+- **Fuzzy:** brainstorm WITH the user. Ask only what you can't safely infer, batched (≤4 at a time), and
+  iterate if the answers open new questions — it's a conversation, not a one-shot form. Cover, as needed:
+  1. **Outcome** — what does "done" look like for the whole thing? (drives Definition of Done)
+  2. **Scope / non-goals** — what's explicitly out of scope?
+  3. **Size** — one epic (PR-sized) or a big thing that should be several epics? Any deadline/milestone?
+  4. **Acceptance signals** — how will we know each part works? (drives per-sub-issue acceptance criteria)
+
+Use `/spec` to harden fuzzy areas into testable criteria, and suggest `/office-hours` if the *idea itself*
+(not just its shape) needs pressure-testing before you structure it. Keep it tight — meet the user's clarity,
+don't manufacture questions.
 
 ## Phase 2 — Shape the tree
 - Decide: 1 epic, or N epics (each PR-sized). Name them by outcome.
@@ -57,6 +77,8 @@ Use `/spec` if available to deepen this. Keep it tight — don't interrogate.
 - Ensure required labels exist (`epic`, type, `platform:*`); `create_issue_label` for any missing.
 - Create milestone(s) with `save_milestone` if they don't exist.
 - Create each **epic** with `save_issue` (team, project, milestone, `epic` label, epic body template).
+  If you're **restructuring an epic that already exists**, pass its `id` to `save_issue` to update it in
+  place (don't create a duplicate); add the missing sub-issues under it.
 - Create each **sub-issue** with `save_issue`, setting `parentId` to its epic, plus body template + labels.
 - Leave assignee empty (or assign per the user's instruction).
 - Attach the source brief: save the brainstorm/spec as a Linear document or a comment on the epic.
