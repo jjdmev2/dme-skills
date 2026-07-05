@@ -1,7 +1,7 @@
 ---
 name: chonchi
-description: "Hand finished, user-tested work off to the broader team for review. Moves the Linear issue to In Review, comments a summary of what happened, attaches the FULL session transcript as markdown, and adds the direct GitHub branch/commit/PR link so a nightly code-review agent (e.g. codex) can pick it up from the transcript. Use when the user types /chonchi, or says the work is done + tested + ready for team review. (dme)"
-version: 0.3.0
+description: "Hand the CURRENT session's finished, user-tested work off to the broader team for review. Usually run bare — no ID needed, since you've been building one epic on one branch all session. Moves that Linear issue to In Review, comments a summary, attaches the FULL session transcript as markdown, and adds the GitHub branch/commit/PR link so a nightly code-review agent (e.g. codex) can pick it up from the transcript. Use when the user types /chonchi, or says the work is done + tested + ready for team review. (dme)"
+version: 0.3.1
 ---
 
 # chonchi
@@ -11,9 +11,17 @@ team for review. This is the end-of-session ritual `/ccthis` (the build command)
 because building is a multi-turn conversation and the export must capture the WHOLE session. Run `/chonchi`
 once, at the end.
 
-**Target:** the Linear issue/epic ID for this work (e.g. `/chonchi KIS-160` → `KIS-160`). If none was given,
-infer it from the session (the epic `/ccthis` was run on) and confirm with the user before touching Linear.
-Throughout, `<ISSUE>` = that ID.
+**Target — usually there is NO argument, and that's the normal case.** You've been building ONE epic on ONE
+branch this entire session (that's how `/ccthis` works), so the issue is already in context — just use it.
+Derive it, in order:
+1. the epic/issue `/ccthis` was invoked on in this session;
+2. any Linear issue ID already fetched/updated this session;
+3. the current git branch name (it usually carries the ID, e.g. `kis-160-share-links` → `KIS-160`).
+
+Use what you find and proceed — don't stop to ask for an ID you can already see. State which issue you're
+handing off in your final summary so the user can catch a wrong guess. Only ask the user if NONE of the
+above yields an issue (e.g. a fresh session with no `/ccthis` and an uninformative branch). An explicit
+`/chonchi KIS-160` overrides everything. Throughout, `<ISSUE>` = that issue.
 
 Do the four things below **in order**. Each is independent — if one fails, still do the rest and say so in
 your final summary; never silently skip a step.
