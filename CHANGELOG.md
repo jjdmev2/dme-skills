@@ -2,6 +2,13 @@
 
 All notable changes to the dme skills. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.3.1] — 2026-07-04
+### Changed
+- **`/chonchi` runs bare by default** — no issue ID needed. Since you've been building one epic on one branch
+  all session, it derives the issue from context (the epic `/ccthis` was run on → any Linear ID fetched this
+  session → the branch name) and proceeds, instead of asking for an ID it can already see. An explicit
+  `/chonchi KIS-160` still overrides.
+
 ## [0.3.0] — 2026-07-04
 ### Added
 - **`/chonchi`** — the review-handoff skill, run once when work is tested and ready for the team. It
