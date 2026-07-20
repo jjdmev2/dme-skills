@@ -1,7 +1,7 @@
 ---
 name: chonchi
-description: "Hand the CURRENT session's finished, user-tested work off to the broader team for review. Usually run bare — no ID needed, since you've been building one epic on one branch all session. Moves that Linear issue to In Review, comments a summary, attaches the FULL session transcript as markdown, and adds the GitHub branch/commit/PR link so a nightly code-review agent (e.g. codex) can pick it up from the transcript. Use when the user types /chonchi, or says the work is done + tested + ready for team review. (dme)"
-version: 0.3.1
+description: "Hand the CURRENT session's finished, user-tested work off to the broader team for review. Usually run bare — no ID needed, since you've been building one epic on one branch all session. Moves that Linear issue to In Review, comments a summary, attaches the FULL session transcript as markdown, adds the GitHub branch/commit/PR link, and tags the issue `chonchi` as a success marker so agents can find handed-off work. Use when the user types /chonchi, or says the work is done + tested + ready for team review. (dme)"
+version: 0.3.3
 ---
 
 # chonchi
@@ -23,11 +23,13 @@ handing off in your final summary so the user can catch a wrong guess. Only ask 
 above yields an issue (e.g. a fresh session with no `/ccthis` and an uninformative branch). An explicit
 `/chonchi KIS-160` overrides everything. Throughout, `<ISSUE>` = that issue.
 
-Do the four things below **in order**. Each is independent — if one fails, still do the rest and say so in
-your final summary; never silently skip a step.
+Do the five things below **in order**. Each is independent — if one fails, still do the rest and say so in
+your final summary; never silently skip a step. Step E (the `chonchi` tag) goes LAST because it's the success
+marker — it should only land once the transcript and branch link are actually on the issue.
 
 ## A) Move the issue to In Review
-- `get_issue <ISSUE>` to read its current state and team.
+- `get_issue <ISSUE>` to read its current state, team, **and current labels** (you'll need the labels in
+  step E).
 - `list_issue_statuses { team: "<team>" }`; find the state named **In Review** (or whose type is `review` —
   some teams call it "Review" / "In Review" / "Ready for Review"). If none exists, use the closest
   review-stage state and note which you picked.
@@ -98,6 +100,20 @@ So a nightly reviewer (codex/another agent) can read the transcript, find the co
      (`links` is append-only — it won't clobber existing links). Use the PR url if there is one; otherwise the
      branch url; otherwise the commit url.
 
+## E) Tag the issue `chonchi` (the success marker)
+Apply a Linear label named **`chonchi`** so humans and agents can filter for work that has been handed off —
+it means "transcript + branch link are on this issue." Do this **last**, only after C and D actually
+succeeded; if either failed, skip the tag and say so (the missing tag is itself the signal that it didn't
+fully work).
+1. Ensure the label exists (it's a normal Linear label): `list_issue_labels { team: "<team>", name: "chonchi" }`.
+   If it's absent, create it once:
+   `create_issue_label { name: "chonchi", team: "<team>", color: "#5e6ad2", description: "Handed off for review by /chonchi — full transcript + branch/commit link attached" }`.
+2. Add it **without clobbering existing labels.** `save_issue`'s `labels` param REPLACES the whole set, so
+   pass the UNION — every label the issue already has (from the `get_issue` in step A) PLUS `chonchi`:
+   `save_issue { id: "<ISSUE>", labels: ["<existing label 1>", "<existing label 2>", …, "chonchi"] }`.
+   (If `chonchi` is already there, this is a no-op — fine.)
+
 ## Finish
 One short summary confirming each: **In Review** ✅ · summary comment posted ✅ · **full transcript attached**
-✅ · **GitHub branch/commit link on the issue** ✅. Call out anything that failed and what the user should do.
+✅ · **GitHub branch/commit link on the issue** ✅ · **`chonchi` label applied** ✅. Call out anything that
+failed and what the user should do.

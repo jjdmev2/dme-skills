@@ -11,8 +11,9 @@ review — plus **automatic full-transcript export** so finished work is auditab
   moved as you go, Linear kept in sync. It's a multi-turn conversation — you review and iterate.
 - **`/chonchi <epic>`** — the **review handoff**, run once when the work is tested and ready for the team.
   Moves the issue to **In Review**, comments a summary, **attaches the full session transcript** (same
-  content as `/export`, no manual step), and adds the **branch/commit link** so a nightly code-review agent
-  (codex/another agent) can pick it up straight from the transcript.
+  content as `/export`, no manual step), adds the **branch/commit link** so a nightly code-review agent
+  (codex/another agent) can pick it up straight from the transcript, and tags the issue **`chonchi`** so
+  agents can filter for handed-off work.
 
 Bare commands — `/ccthis`, not `/dme:ccthis`. They're [Agent Skills](https://docs.claude.com/en/docs/claude-code/skills),
 distributed the way gstack is: a git repo cloned into `~/.claude/skills/`.
