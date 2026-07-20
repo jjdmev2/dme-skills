@@ -2,6 +2,14 @@
 
 All notable changes to the dme skills. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.3.3] — 2026-07-20
+### Added
+- **`/chonchi` tags the issue `chonchi`** as a success marker (step E), applied last — only after the
+  transcript upload and branch/commit link actually land. A `chonchi`-labelled issue reliably means "handed
+  off, transcript + code links attached," so agents can filter for it. Applied as the union with the issue's
+  existing labels (since `save_issue`'s `labels` replaces the whole set), and the label is auto-created once
+  if the team doesn't have it.
+
 ## [0.3.2] — 2026-07-05
 ### Changed
 - **`/linearthis` is now an adaptive brainstorming partner**, not just a backlog formatter. It gauges how
