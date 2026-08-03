@@ -1,7 +1,7 @@
 ---
 name: chonchi
 description: "Hand the CURRENT session's finished, user-tested work off to the broader team for review. Usually run bare — no ID needed, since you've been building one epic on one branch all session. Moves that Linear issue to In Review, comments a summary, attaches the FULL session transcript as markdown, adds the GitHub branch/commit/PR link, and tags the issue `chonchi` as a success marker so agents can find handed-off work. Use when the user types /chonchi, or says the work is done + tested + ready for team review. (dme)"
-version: 0.3.3
+version: 0.3.4
 ---
 
 # chonchi
@@ -58,6 +58,7 @@ private. Note in your final summary that a full transcript was attached.
 1. Render THIS session to markdown. Locate the converter (first that exists — it auto-detects this session):
    ```bash
    CONV="$HOME/.claude/dme/bin/transcript-to-md.mjs"
+   [ -f "$CONV" ] || CONV="$HOME/.claude/skills/dme-skills/scripts/transcript-to-md.mjs"
    [ -f "$CONV" ] || CONV="$HOME/.claude/skills/dme-cc/scripts/transcript-to-md.mjs"
    [ -f "$CONV" ] || CONV="$(find "$HOME/.claude" -name transcript-to-md.mjs 2>/dev/null | head -1)"
    OUT="/tmp/chonchi-<ISSUE>-transcript.md"
@@ -86,6 +87,7 @@ So a nightly reviewer (codex/another agent) can read the transcript, find the co
 1. Compute the links (first script that exists; it reads the repo you're in):
    ```bash
    LINKS="$HOME/.claude/dme/bin/gh-links.sh"
+   [ -f "$LINKS" ] || LINKS="$HOME/.claude/skills/dme-skills/scripts/gh-links.sh"
    [ -f "$LINKS" ] || LINKS="$HOME/.claude/skills/dme-cc/scripts/gh-links.sh"
    [ -f "$LINKS" ] || LINKS="$(find "$HOME/.claude" -name gh-links.sh 2>/dev/null | head -1)"
    bash "$LINKS"

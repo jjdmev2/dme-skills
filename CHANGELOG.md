@@ -2,6 +2,21 @@
 
 All notable changes to the dme skills. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.4.0] — 2026-08-03
+### Added
+- **`/storythis`** — Kaisa's designer→dev handoff skill, cloned from
+  [`dmenetwork/story-this`](https://github.com/dmenetwork/story-this) (v0.4.0) into the pack. Turns
+  *finished* design/spec work into the right Linear structure, adaptively: a value-framed project + a
+  shared design issue + lean, **code-verified** build stories — or just the subset that fits.
+
+### Changed
+- **Repo renamed, moved, and made public:** `dmenetwork/dme-cc` → **`jjdmev2/dme-skills`**, public so
+  anyone can install. Old clones keep working (GitHub redirects the remote); new installs clone into
+  `~/.claude/skills/dme-skills`. `/dme-upgrade` and `/chonchi` now check the new path first and fall back
+  to the legacy `dme-cc` dir.
+- README reframed around how the team works — agentic workflows across Claude Code / Codex / harnesses
+  like Hermes and Buzz, on Conductor / VS Code / the Codex app — with `/storythis` added to the flow.
+
 ## [0.3.3] — 2026-07-20
 ### Added
 - **`/chonchi` tags the issue `chonchi`** as a success marker (step E), applied last — only after the

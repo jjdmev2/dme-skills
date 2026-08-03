@@ -1,4 +1,4 @@
-# Contributing to dme
+# Contributing to dme-skills
 
 ## Anatomy of a skill
 
@@ -37,5 +37,6 @@ The body is **executable instructions**, written as numbered phases. Keep it sel
 
 ## Local dev
 
-Your working copy already lives at `~/.claude/skills/dme-cc`, so edits are live next session.
+Your working copy already lives at `~/.claude/skills/dme-skills` (or the legacy `~/.claude/skills/dme-cc`),
+so edits are live next session.
 Run `./setup` after changing the hook or scripts.
