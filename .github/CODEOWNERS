@@ -1,2 +1,6 @@
 # Every change to this repo requires @jjdmev2 approval.
 * @jjdmev2
+
+# CODEOWNERS is last-match-wins. Keep the ownership file itself pinned to the
+# owner so any broader rule added above can never silently unpin it.
+/.github/CODEOWNERS @jjdmev2
