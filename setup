@@ -45,9 +45,9 @@ Done. Finish in Claude Code:
   1. /mcp   → authenticate to Linear (one-time)
   2. make sure gstack is installed (the flows call /spec, /code-review, /ship, /codex…)
 Then, in any repo:
-  /linearthis <idea>     → plan epics + sub-issues
+  /linearthis <idea>     → plan an epic + work issues (or one standalone issue)
   /storythis             → finished a design? land it as project + design issue + build stories
-  /ccthis <EPIC-ID>      → build + ship (multi-turn; you review as you go)
-  /chonchi <EPIC-ID>     → when tested: In Review + full transcript + branch link for team review
+  /ccthis <ISSUE-ID>     → build + ship ONE work issue: one branch, one PR (multi-turn)
+  /chonchi               → when tested: that work issue → In Review + transcript + branch link
 Update anytime:          /dme-upgrade
 NEXT

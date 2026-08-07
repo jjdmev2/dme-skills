@@ -2,6 +2,74 @@
 
 All notable changes to the dme skills. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.5.0] — 2026-08-07
+
+`/linearthis`, `/ccthis` and `/chonchi` move to 0.5.0 together: one workflow contract across the three,
+after review on [dme-skills#6](https://github.com/jjdmev2/dme-skills/pull/6). (The pack's 0.4.0 was the
+repo rename + `/storythis`; the changes below were first proposed as a parallel 0.4.0 and are
+re-versioned here.)
+
+### Changed — the epic/work-issue contract (one model, all three skills)
+- **Two units, defined once.** An **epic** is one coordinated product outcome. A **work issue** is one
+  ownable, reviewable, verifiable package — a sub-issue under an epic, or a **standalone issue** when the
+  work is only one package (no epic; the old "an epic has ≥2 sub-issues" rule is gone, replaced by
+  right-sizing: one package → standalone, an epic with a single child should have been standalone).
+- **The invariant: a code work issue never spans repositories.** One repository may need several work
+  issues. The earlier "one sub-issue per repo" rule is demoted to what it really was — the recommended
+  default (group a repo's concerns under headed AC blocks; split only into separately reviewable
+  packages; a spike is its own package) — so the per-repo rule, the spike exception and the
+  minimum-children rule can no longer contradict each other.
+- **Repositories are discovered, not assumed.** `/linearthis` derives the affected repos and surfaces from
+  the conversation and the code, or asks — no organization topology or repository names baked into the
+  skills.
+- **One work-issue template**, defined in `/linearthis` and consumed by `/ccthis`:
+  `Summary / Spec / Acceptance criteria / Testing steps / Estimate` (a standalone issue adds
+  `Summary (human)` + `Why`). `/ccthis`'s parallel `Problem / AC / Non-goals` template is gone. Epic
+  context — `Summary (human)`, `Why`, `Objective`, `Declared limit` — lives on the epic only and is never
+  restated per child.
+- **`EPIC_ID` ≠ `WORK_ISSUE_ID`.** `/ccthis` builds ONE work issue per run — one branch, one PR — and
+  given an epic ID it picks one child and says which. **It completes only the active, verified work
+  issue: never a sibling, never the epic.** `/chonchi` hands off the ACTIVE work issue (it refuses to
+  hand off an epic): In Review, transcript, branch link, `chonchi` label and actual-vs-estimate all land
+  on the work issue.
+- **The epic aggregates.** `/chonchi` maintains a single idempotent roll-up comment on the parent epic
+  (marked `<!-- chonchi-rollup -->`, updated in place — repeated runs are safe): per-child state and
+  actuals, the running total, what remains. The epic moves to In Review only when its last child is
+  handed off, and one child's numbers never overwrite the epic's values.
+- **Estimates live on work issues**; the epic's `## Estimate` is the labelled sum of its children.
+  `/chonchi`'s cumulative actual is tracked per work issue across sessions.
+- Each skill now carries a **Contract** table covering the five shapes: a standalone change · one repo /
+  one package · one repo / several packages · several repos partially done · repeated `/chonchi` runs.
+- **README, ANNOUNCE and `setup` teach the same model** (they previously still said "one branch / one PR
+  per epic") and the examples stay generic. `/storythis` was left untouched — its right-sizing table
+  already matches the standalone-vs-epic rule, and it has its own author.
+
+### Added (carried from the parallel 0.4.0 proposal)
+- **`/linearthis` always asks for the human summary — asking is not optional.** The epic (or the
+  standalone issue) carries a `## Summary (human)` in the requester's voice — the one thing the skill
+  cannot infer, asked for exactly once, for that container. The skill never hands back a blank: it asks
+  two or three questions whose answers *are* the summary (why now · what actually bothers them · what
+  they'd tell a teammate) and composes from those; a `[DRAFT]` the user has never seen must not exist.
+  The answer is read back through the whole epic — if the user's framing differs, theirs wins and the
+  Objective moves with it.
+- **Answer in any language, write English.** The user replies in whatever language they think in; every
+  Linear field is written in English. No mixed-language bodies.
+- **Ask with options, not open questions — grounded in the code first.** Every decision that changes the
+  work is offered as 2–4 options with a recommendation; options whose feasibility wasn't verified are
+  marked and become spikes instead of estimates. Includes the four recurring misses: storage, coverage
+  depth, what the verb actually means (prevent vs remediate vs report), and the declared limit.
+- **Search Linear before shaping anything** (Phase 0) — in every state including Backlog and Done — and
+  report which case it found: exists / already landed / partial overlap / nothing.
+- **`/chonchi` records the actual hours against the estimate**, cumulative across sessions, with one line
+  on why it diverged; `/linearthis` reads recent actuals back before estimating new work, and a team with
+  no recorded actuals after several epics should drop hours for S/M/L.
+- **Locations rot, existence doesn't:** issue bodies never cite line numbers, but DO state what already
+  exists, which survives refactors.
+- **Titles name the surfaces they touch**, pipe-separated, then the feature; work issues keep the feature
+  so they read on their own outside the epic.
+- **Phase 3 previews a real body, not a summary of one**, and names the places the shaping is least sure
+  about instead of asking for a rubber stamp.
+
 ## [0.4.0] — 2026-08-03
 ### Added
 - **`/storythis`** — Kaisa's designer→dev handoff skill, cloned from
