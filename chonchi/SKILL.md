@@ -1,7 +1,7 @@
 ---
 name: chonchi
 description: "Hand the CURRENT session's finished, user-tested work off to the broader team for review. Usually run bare — no ID needed, since you've been building one epic on one branch all session. Moves that Linear issue to In Review, comments a summary, attaches the FULL session transcript as markdown, adds the GitHub branch/commit/PR link, and tags the issue `chonchi` as a success marker so agents can find handed-off work. Use when the user types /chonchi, or says the work is done + tested + ready for team review. (dme)"
-version: 0.3.4
+version: 0.4.0
 ---
 
 # chonchi
@@ -45,6 +45,17 @@ without replaying the session. Include:
 - **Review focus / risks** — where you most want eyes; anything intentionally left out or deferred.
 - **Code** — the GitHub links from step D (run `gh-links.sh` from step D1 first, then paste its output here
   so the branch/commit is one click from the issue).
+- **Actual vs estimate** — if the epic body has an `## Estimate`, close the loop that makes it worth
+  anything: `Estimate: 6–10 AI-h · Actual: ~14 AI-h (this session ~9 + 5 prior)`.
+  - Derive **this session's** hours from the transcript: first to last timestamp of real work, not
+    wall-clock with breaks.
+  - **An epic usually spans several sessions** — `/ccthis` is multi-turn by design — so before writing the
+    number, check the epic's existing comments for a prior `Actual:` and report the **cumulative** total,
+    showing the split. Reporting only the last session would bias every future estimate low, which is the
+    exact failure this loop exists to prevent.
+  - If you genuinely can't tell, write `Actual: not measured` rather than a number you invented.
+  - Add one line on *why* it diverged when it did — that line is what calibrates the next estimate, not the
+    number. `/linearthis` reads these back before estimating a new epic in the same project.
 - A line: _"Full session transcript attached below."_
 
 ## C) Attach the FULL session transcript (.md) to the issue
@@ -58,7 +69,6 @@ private. Note in your final summary that a full transcript was attached.
 1. Render THIS session to markdown. Locate the converter (first that exists — it auto-detects this session):
    ```bash
    CONV="$HOME/.claude/dme/bin/transcript-to-md.mjs"
-   [ -f "$CONV" ] || CONV="$HOME/.claude/skills/dme-skills/scripts/transcript-to-md.mjs"
    [ -f "$CONV" ] || CONV="$HOME/.claude/skills/dme-cc/scripts/transcript-to-md.mjs"
    [ -f "$CONV" ] || CONV="$(find "$HOME/.claude" -name transcript-to-md.mjs 2>/dev/null | head -1)"
    OUT="/tmp/chonchi-<ISSUE>-transcript.md"
@@ -87,7 +97,6 @@ So a nightly reviewer (codex/another agent) can read the transcript, find the co
 1. Compute the links (first script that exists; it reads the repo you're in):
    ```bash
    LINKS="$HOME/.claude/dme/bin/gh-links.sh"
-   [ -f "$LINKS" ] || LINKS="$HOME/.claude/skills/dme-skills/scripts/gh-links.sh"
    [ -f "$LINKS" ] || LINKS="$HOME/.claude/skills/dme-cc/scripts/gh-links.sh"
    [ -f "$LINKS" ] || LINKS="$(find "$HOME/.claude" -name gh-links.sh 2>/dev/null | head -1)"
    bash "$LINKS"
