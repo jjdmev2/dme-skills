@@ -1,60 +1,19 @@
 # dme-skills
 
-We run most of our work through **workflows and agentic processes** — Claude Code, Codex, and harnesses
-like Hermes and Buzz — on whatever surface fits the moment: **Conductor** for parallel agents, **VS Code**
-at the desk, or the **Codex app** for remote work (touch grass, still ship). Along the way we've settled on
-team best practices for that way of working: how we **start a task**, how we keep **Linear up to date**
-while an agent builds, how we **brainstorm and define work** as user stories with acceptance criteria, and
-how we **hand finished work off** for review with a full audit trail.
+Plan work in Linear. Build one work issue. Hand it off with proof.
 
-**These are our team skills** — that whole flow packaged as
-[Agent Skills](https://docs.claude.com/en/docs/claude-code/skills), public so anyone who wants to run the
-same processes can install them.
+`dme-skills` is a public [Agent Skills](https://docs.claude.com/en/docs/claude-code/skills) pack for a
+consistent **plan → build → review** workflow. It keeps Linear, branches, PRs, estimates, code links, and
+full session transcripts in sync.
 
-The flow is plan → build → hand off for review, plus **automatic full-transcript export** so finished work
-is auditable:
+| Command | Result |
+|---|---|
+| **`/linearthis <idea>`** | Shapes an idea into one standalone work issue, or an epic with work issues. |
+| **`/storythis`** | Turns finished design/spec work into code-verified Linear work for developers. |
+| **`/ccthis <issue-or-epic>`** | Builds **one work issue** on **one branch + one PR**. Given an epic, it picks one child and tells you which. |
+| **`/chonchi`** | Hands the current work issue to review with its summary, actuals, code link, and full transcript. |
 
-- **`/linearthis <idea>`** — an **adaptive brainstorming partner** that shapes work *with* you into proper
-  Linear structure — **an epic + work issues, or a single standalone issue** — with acceptance criteria.
-  Pressure-tests a fuzzy idea or just confirms a sharp one, previews the tree, then creates it (with or
-  without an existing epic). Pairs with gstack `/office-hours`. Ready to assign.
-- **`/storythis`** — the **designer → dev handoff**: turns *finished* design/spec work into the right Linear
-  structure, adaptively — a value-framed project + a shared design issue + lean, **code-verified** build
-  stories, or just the subset that fits. Cloned from Kaisa's
-  [`story-this`](https://github.com/dmenetwork/story-this) and kept in the pack.
-- **`/ccthis <id>`** — the owner **builds ONE work issue**: gstack, **one branch / one PR per work issue**,
-  Linear kept in sync. Given an epic ID it picks one work issue and says which. It completes only what it
-  built and verified — never siblings, never the epic. It's a multi-turn conversation — you review and
-  iterate.
-- **`/chonchi`** — the **review handoff**, run once per work issue when it's tested and ready for the team.
-  Moves the **work issue** to **In Review**, comments a summary with actual-vs-estimate, **attaches the
-  full session transcript** (same content as `/export`, no manual step), adds the **branch/commit link**
-  so a nightly code-review agent (codex/another agent) can pick it up straight from the transcript,
-  refreshes a single roll-up comment on the parent epic, and tags the work issue **`chonchi`** so agents
-  can filter for handed-off work.
-
-## The model
-
-- An **epic** is one coordinated product outcome. A **work issue** is one ownable, reviewable, verifiable
-  package — a sub-issue under an epic, or a **standalone issue** when the work is only one package (no
-  epic).
-- **A code work issue never spans repositories.** One repo may need several work issues. The default is
-  one work issue per repo, grouped by concern — split further only into packages someone can review alone.
-- **The work issue is the unit of building, completion and handoff**: one branch + one PR each
-  (`/ccthis`), handed off individually (`/chonchi`). The epic aggregates — estimates and actuals live on
-  the work issues, the epic carries one roll-up comment, and it moves to In Review only when its last
-  child is handed off. One child's result never overwrites the epic's values.
-- The skills **discover the affected repositories from the conversation and the code, or ask** — nothing
-  about any organization's topology or repository names is baked in.
-
-Bare commands — `/ccthis`, not `/dme:ccthis`. Distributed the way gstack is: a git repo cloned into
-`~/.claude/skills/`.
-
-**Why the build/handoff split:** building is never one shot — you go back and forth with the agent. If the
-transcript exported mid-build it would miss the rest of the session, so the export lives in `/chonchi`, run
-once at the end when you're actually done and tested.
-
----
+Commands are bare: use `/ccthis`, not `/dme:ccthis`.
 
 ## Install
 
@@ -63,66 +22,119 @@ git clone https://github.com/jjdmev2/dme-skills ~/.claude/skills/dme-skills
 ~/.claude/skills/dme-skills/setup
 ```
 
-The repo is public — anyone can clone it. `setup` registers the transcript hook (backs up
-`~/.claude/settings.json` first) and adds the Linear MCP. Then, in Claude Code:
+Then:
 
-1. `/mcp` → authenticate to Linear (one-time).
-2. Make sure **gstack** is installed (the flows call `/spec`, `/code-review`, `/ship`, `/codex`… — if a
-   skill is missing they fall back to native `git`/`gh`).
+1. Run `/mcp` in Claude Code and authenticate to Linear.
+2. Make sure `node` is installed; it powers transcript export.
+3. Install **gstack** for the full workflow. Missing gstack skills fall back to native `git`/`gh` where possible.
 
-`node` is required — it powers the transcript export.
+The repo is public, so cloning needs no GitHub authentication. The skills work in Claude Code CLI, the
+VS Code Claude Code extension, and Conductor.
 
-## Use
+## Run the workflow
 
-```
-/linearthis add branded share links to Reus     # → creates the epic + work issues (or one standalone issue). Assign them.
-/storythis                                       # → finished a design? land it as project + design issue + stories
-/ccthis KIS-160                                  # → build + ship ONE work issue: one branch, one PR (multi-turn)
-/chonchi                                         # → tested? that work issue goes In Review + transcript + branch link
-```
+### 1. Plan
 
-Works in the Claude Code CLI, the VS Code Claude Code extension, and Conductor.
-
-## Update
-
-```
-/dme-upgrade          # pulls latest + re-runs setup
+```text
+/linearthis add branded share links
 ```
 
-Or manually: `cd ~/.claude/skills/dme-skills && git pull && ./setup`. To ship an update, bump the `version:`
-in the relevant `SKILL.md`, commit, and push — teammates pick it up with `/dme-upgrade`.
+`/linearthis` checks existing Linear work, reads the relevant code, and asks only the decisions that
+change scope. It creates either:
 
-> Previously this repo lived at `dmenetwork/dme-cc`. Old clones in `~/.claude/skills/dme-cc` keep working
-> (GitHub redirects the remote), and `/dme-upgrade` and `/chonchi` know both locations — but new installs
-> should use the path above.
+- one **standalone work issue** when the outcome is one package; or
+- one **epic** with multiple work issues when the outcome needs several packages.
 
-## How the automatic export works (no `/export`)
+Finished a design first? Run `/storythis` to create the design-to-development handoff instead.
 
-Claude Code writes every session to `~/.claude/projects/<cwd>/<session>.jsonl` — the exact source
-`/export` reads. The session hook records that path (per cwd, so parallel Conductor worktrees don't cross
-wires) and installs `transcript-to-md.mjs` + `gh-links.sh` to `~/.claude/dme/bin/`. When you run `/chonchi`
-it renders that JSONL to markdown and uploads it to the issue via the Linear attachment API
-(`prepare_attachment_upload` → PUT → `create_attachment_from_upload`), then computes the GitHub branch/commit
-link with `gh-links.sh` and attaches it too. No manual `/export`, no re-run.
+### 2. Build one work issue
 
-**Heads-up:** a transcript can contain secrets echoed to the terminal (tokens, `.env`, keys). `/chonchi`
-warns and asks you to redact before uploading if the issue isn't private.
-
-## Layout
-
+```text
+/ccthis KIS-160
 ```
-linearthis/SKILL.md      # /linearthis — shape an idea into an epic + work issues (or a standalone issue)
-storythis/SKILL.md       # /storythis — designer→dev handoff: project + design issue + code-verified stories
-ccthis/SKILL.md          # /ccthis — build + ship ONE work issue (one branch / one PR)
-chonchi/SKILL.md         # /chonchi — review handoff: work issue → In Review + transcript + branch link + epic roll-up
-dme-upgrade/SKILL.md     # /dme-upgrade — git pull + setup
+
+`/ccthis` builds one work issue per run, keeps Linear updated, and ships one branch + one PR. It never
+completes untouched siblings or the parent epic.
+
+Building is a conversation: review the work, test it, and iterate before handoff.
+
+### 3. Hand it off
+
+```text
+/chonchi
+```
+
+When the current work issue is finished and tested, `/chonchi`:
+
+1. Moves the work issue to **In Review**.
+2. Attaches the full session transcript and a direct PR, branch, or commit link.
+3. Creates or updates one session summary with estimate, session actual, and cumulative actual.
+4. Applies `chonchi` only after the transcript and code link succeed.
+5. Refreshes one roll-up comment on the parent epic, if any.
+
+This split is deliberate: exporting during `/ccthis` would miss later feedback and revisions.
+
+### Retry and reopen safely
+
+- **Same-session retry:** reuses the marked comment, deterministic transcript attachment, and identical
+  code link. The session's hours count once.
+- **Later session:** adds one new session record and adds that session's actual once to the cumulative total.
+- **Reopened work:** `/ccthis` removes only the stale `chonchi` label, preserves other labels, and returns
+  an unstarted or review-stage parent epic to **In Progress**.
+
+## Rules that keep Linear correct
+
+- An **epic** is one coordinated product outcome. A **work issue** is one ownable, reviewable, verifiable
+  package.
+- A code work issue never spans repositories. One repository may contain several work issues.
+- The work issue owns its branch, PR, estimate, actuals, state, and handoff. The epic only aggregates its
+  children; one child's data never overwrites the epic.
+- A `chonchi` label means the transcript and code link both landed. A child counts as handed off only when
+  it also has a review/completed state.
+- The epic moves to **In Review** only when every child is handed off. A partial handoff never promotes
+  the epic to In Review and never changes untouched siblings.
+
+## Reference
+
+### Update
+
+```text
+/dme-upgrade
+```
+
+This pulls the latest version and re-runs setup. Manual update:
+
+```bash
+cd ~/.claude/skills/dme-skills && git pull && ./setup
+```
+
+This repository previously lived at `dmenetwork/dme-cc`. Existing clones keep working through GitHub's
+redirect and the skills' legacy-path fallback. New installs should use `jjdmev2/dme-skills`.
+
+### Transcript export and security
+
+Claude Code stores each session as JSONL. The installed session hook records the active transcript path;
+`/chonchi` converts it to Markdown, uploads it to Linear, and attaches the current GitHub link. You do not
+need to run `/export` manually.
+
+Transcripts can contain secrets printed in the terminal, including tokens, `.env` values, keys, and signed
+URLs. Review and redact the transcript before upload unless the Linear workspace and issue are private.
+
+### Layout
+
+```text
+linearthis/SKILL.md      # plan: idea → standalone work issue or epic + work issues
+storythis/SKILL.md       # design handoff → project, design issue, and build stories
+ccthis/SKILL.md          # build: one work issue → one branch + one PR
+chonchi/SKILL.md         # review: transcript + code link + actuals + epic roll-up
+dme-upgrade/SKILL.md     # update the pack and re-run setup
 scripts/
-  session-hook.sh        # records the live transcript path + bootstraps the helpers (fast, exits 0)
-  transcript-to-md.mjs   # JSONL → markdown (same content as /export)
-  gh-links.sh            # current repo → GitHub repo/branch/commit/PR links (best-effort)
-setup                    # registers the hook + Linear MCP (safe, idempotent)
+  session-hook.sh        # records the active transcript path
+  transcript-to-md.mjs   # converts Claude JSONL to Markdown
+  gh-links.sh            # finds the current repo, branch, commit, and PR
+setup                    # installs the hook and configures the Linear MCP
 ```
 
-## License
+### License
 
 MIT — see [LICENSE](LICENSE).
