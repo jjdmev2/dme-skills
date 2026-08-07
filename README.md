@@ -15,20 +15,37 @@ The flow is plan → build → hand off for review, plus **automatic full-transc
 is auditable:
 
 - **`/linearthis <idea>`** — an **adaptive brainstorming partner** that shapes work *with* you into proper
-  **epics + sub-issues** with acceptance criteria. Pressure-tests a fuzzy idea or just confirms a sharp one,
-  previews the tree, then creates it (with or without an existing epic). Pairs with gstack `/office-hours`.
-  Ready to assign.
+  Linear structure — **an epic + work issues, or a single standalone issue** — with acceptance criteria.
+  Pressure-tests a fuzzy idea or just confirms a sharp one, previews the tree, then creates it (with or
+  without an existing epic). Pairs with gstack `/office-hours`. Ready to assign.
 - **`/storythis`** — the **designer → dev handoff**: turns *finished* design/spec work into the right Linear
   structure, adaptively — a value-framed project + a shared design issue + lean, **code-verified** build
   stories, or just the subset that fits. Cloned from Kaisa's
   [`story-this`](https://github.com/dmenetwork/story-this) and kept in the pack.
-- **`/ccthis <epic>`** — the owner **builds** an epic: gstack, **one branch / one PR per epic**, sub-issues
-  moved as you go, Linear kept in sync. It's a multi-turn conversation — you review and iterate.
-- **`/chonchi <epic>`** — the **review handoff**, run once when the work is tested and ready for the team.
-  Moves the issue to **In Review**, comments a summary, **attaches the full session transcript** (same
-  content as `/export`, no manual step), adds the **branch/commit link** so a nightly code-review agent
-  (codex/another agent) can pick it up straight from the transcript, and tags the issue **`chonchi`** so
-  agents can filter for handed-off work.
+- **`/ccthis <id>`** — the owner **builds ONE work issue**: gstack, **one branch / one PR per work issue**,
+  Linear kept in sync. Given an epic ID it picks one work issue and says which. It completes only what it
+  built and verified — never siblings, never the epic. It's a multi-turn conversation — you review and
+  iterate.
+- **`/chonchi`** — the **review handoff**, run once per work issue when it's tested and ready for the team.
+  Moves the **work issue** to **In Review**, comments a summary with actual-vs-estimate, **attaches the
+  full session transcript** (same content as `/export`, no manual step), adds the **branch/commit link**
+  so a nightly code-review agent (codex/another agent) can pick it up straight from the transcript,
+  refreshes a single roll-up comment on the parent epic, and tags the work issue **`chonchi`** so agents
+  can filter for handed-off work.
+
+## The model
+
+- An **epic** is one coordinated product outcome. A **work issue** is one ownable, reviewable, verifiable
+  package — a sub-issue under an epic, or a **standalone issue** when the work is only one package (no
+  epic).
+- **A code work issue never spans repositories.** One repo may need several work issues. The default is
+  one work issue per repo, grouped by concern — split further only into packages someone can review alone.
+- **The work issue is the unit of building, completion and handoff**: one branch + one PR each
+  (`/ccthis`), handed off individually (`/chonchi`). The epic aggregates — estimates and actuals live on
+  the work issues, the epic carries one roll-up comment, and it moves to In Review only when its last
+  child is handed off. One child's result never overwrites the epic's values.
+- The skills **discover the affected repositories from the conversation and the code, or ask** — nothing
+  about any organization's topology or repository names is baked in.
 
 Bare commands — `/ccthis`, not `/dme:ccthis`. Distributed the way gstack is: a git repo cloned into
 `~/.claude/skills/`.
@@ -58,10 +75,10 @@ The repo is public — anyone can clone it. `setup` registers the transcript hoo
 ## Use
 
 ```
-/linearthis add branded share links to Reus     # → creates epic(s)+sub-issues in Linear. Assign them.
+/linearthis add branded share links to Reus     # → creates the epic + work issues (or one standalone issue). Assign them.
 /storythis                                       # → finished a design? land it as project + design issue + stories
-/ccthis KIS-160                                  # → build + ship one PR (multi-turn; you review as you go)
-/chonchi KIS-160                                 # → tested? In Review + full transcript + branch link for the team
+/ccthis KIS-160                                  # → build + ship ONE work issue: one branch, one PR (multi-turn)
+/chonchi                                         # → tested? that work issue goes In Review + transcript + branch link
 ```
 
 Works in the Claude Code CLI, the VS Code Claude Code extension, and Conductor.
@@ -94,10 +111,10 @@ warns and asks you to redact before uploading if the issue isn't private.
 ## Layout
 
 ```
-linearthis/SKILL.md      # /linearthis — author epics + sub-issues from an idea
+linearthis/SKILL.md      # /linearthis — shape an idea into an epic + work issues (or a standalone issue)
 storythis/SKILL.md       # /storythis — designer→dev handoff: project + design issue + code-verified stories
-ccthis/SKILL.md          # /ccthis — build + ship an epic (one branch / one PR)
-chonchi/SKILL.md         # /chonchi — review handoff: In Review + transcript + branch link
+ccthis/SKILL.md          # /ccthis — build + ship ONE work issue (one branch / one PR)
+chonchi/SKILL.md         # /chonchi — review handoff: work issue → In Review + transcript + branch link + epic roll-up
 dme-upgrade/SKILL.md     # /dme-upgrade — git pull + setup
 scripts/
   session-hook.sh        # records the live transcript path + bootstraps the helpers (fast, exits 0)
