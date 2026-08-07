@@ -61,9 +61,11 @@ Never skip a phase because one tool is missing.
 - Read the WORK_ISSUE's description + acceptance criteria in full. If it has a parent epic, read the
   epic's body too (Objective, Declared limit, `blockedBy` order) — that is the boundary you build inside.
 - Read linked specs and relevant code so you follow existing patterns.
-- Set the WORK_ISSUE **In Progress** and assign it to the user. Set the parent epic In Progress too if it
-  hasn't started — a child in progress means the outcome is in progress; that is the ONLY epic state
-  change this skill ever makes.
+- Set the WORK_ISSUE **In Progress** and assign it to the user. If it was previously handed off, remove
+  **only** the `chonchi` label by saving the full current label set minus `chonchi`; preserve every other
+  label. If it has a parent epic that is unstarted or in an In Review/review-stage state, return that epic
+  to **In Progress** while this child is active. A child in progress means the outcome is in progress; these are the ONLY
+  epic state changes this skill ever makes.
 - Create **ONE branch for this work issue** and do all the work on it.
 
 ## Phase 1 — Plan (gstack, as needed)
@@ -124,4 +126,4 @@ issues still open (if any), and the `/chonchi` next step.
 | Epic ID, one repo, one child | Resolves to that child and builds it. The epic gets In Progress at most — nothing else. |
 | Epic, one repo, several work issues | ONE work issue per run, each on its own branch + PR — even though they share a repo. |
 | Epic across repos, partially done | The finished package ships and is handed off individually; untouched siblings and the epic keep their state exactly. |
-| Re-run on the same work issue | Continues on its existing branch; never restarts or absorbs siblings. |
+| Re-run on the same work issue | Continues on its existing branch; never restarts or absorbs siblings. Reopening after handoff clears only the stale `chonchi` handoff label, preserving all other labels; if its parent epic is unstarted or in a review-stage state, the active child returns it to In Progress. |

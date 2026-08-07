@@ -9,11 +9,13 @@ version: 0.5.0
 The session's work is **done and the user has tested it** — you are now handing it off to the broader
 team for review. This is the end-of-session ritual `/ccthis` (the build command) deliberately does NOT do,
 because building is a multi-turn conversation and the export must capture the WHOLE session. Run `/chonchi`
-once, at the end.
+once, at the end. Before the steps, locate the source transcript filename/path that will be exported and
+derive a stable `<SESSION_KEY>` from it (for example, a deterministic hash of that canonical path). Use
+that exact key for this run's comment marker and transcript filename; do not derive it from wall-clock time.
 
 **The unit is the WORK ISSUE, never the epic.** `/ccthis` builds one work issue (a sub-issue of an epic,
 or a standalone issue) per run — that work issue is what you hand off. The parent epic is touched exactly
-once, in step E (the roll-up); its state, estimate and labels are aggregations of its children and are
+once, in step F (the roll-up); its state, estimate and labels are aggregations of its children and are
 never overwritten by one child's handoff.
 
 **Target — usually there is NO argument, and that's the normal case.** You've been building ONE work issue
@@ -31,44 +33,22 @@ you're handing off in your final summary so the user can catch a wrong guess. Th
 `<WORK_ISSUE>` = that issue.
 
 Do the six steps below **in order**. Each is independent — if one fails, still do the rest and say so in
-your final summary; never silently skip a step. Step F (the `chonchi` tag) goes LAST because it's the
-success marker — it should only land once the transcript and branch link are actually on the issue.
+your final summary; never silently skip a step. Step E (the `chonchi` tag) is the success marker: apply it
+only after the transcript attachment and GitHub link both succeed. Step F refreshes the parent epic only
+after that state is accurate.
 
 ## A) Move the WORK ISSUE to In Review
-- `get_issue <WORK_ISSUE>` to read its current state, team, **parent issue** (you'll need it in step E),
-  and **current labels** (you'll need those in step F).
+- `get_issue <WORK_ISSUE>` to read its current state, team, **parent issue** (you'll need it in step F),
+  and **current labels** (you'll need those in step E).
 - `list_issue_statuses { team: "<team>" }`; find the state named **In Review** (or whose type is `review` —
   some teams call it "Review" / "In Review" / "Ready for Review"). If none exists, use the closest
   review-stage state and note which you picked.
 - Only move it if it isn't already there: `save_issue { id: "<WORK_ISSUE>", state: "In Review" }`
   (`state` accepts the state name, type, or ID).
 - Do NOT move it to Done — Done happens after the team's review/merge, not here. And do NOT move the
-  parent epic's state here — that is step E's decision, by aggregation.
+  parent epic's state here — that is step F's decision, by aggregation.
 
-## B) Comment what happened
-Post ONE `save_comment { issueId: "<WORK_ISSUE>", body: … }` that lets a reviewer (human or agent) get
-oriented without replaying the session. Include:
-- **What shipped** — the change in 2–5 bullets (features/fixes, key files/areas touched).
-- **Testing done** — what the user verified and how (so the reviewer knows what's already covered).
-- **Review focus / risks** — where you most want eyes; anything intentionally left out or deferred.
-- **Code** — the GitHub links from step D (run `gh-links.sh` from step D1 first, then paste its output here
-  so the branch/commit is one click from the issue).
-- **Actual vs estimate** — if the work issue has an `## Estimate`, close the loop that makes it worth
-  anything: `Estimate: 6–10 AI-h · Actual: ~14 AI-h (this session ~9 + 5 prior)`.
-  - Derive **this session's** hours from the transcript: first to last timestamp of real work, not
-    wall-clock with breaks.
-  - **A work issue can span several sessions** — `/ccthis` is multi-turn by design — so before writing the
-    number, check the WORK ISSUE's existing comments for a prior `Actual:` and report the **cumulative**
-    total, showing the split. Reporting only the last session would bias every future estimate low, which
-    is the exact failure this loop exists to prevent.
-  - The actual lands HERE, on the work issue — never as a number written onto the epic (the epic only ever
-    gets the step-E roll-up).
-  - If you genuinely can't tell, write `Actual: not measured` rather than a number you invented.
-  - Add one line on *why* it diverged when it did — that line is what calibrates the next estimate, not the
-    number. `/linearthis` reads these back before estimating new work in the same project.
-- A line: _"Full session transcript attached below."_
-
-## C) Attach the FULL session transcript (.md) to the work issue
+## B) Attach the FULL session transcript (.md) to the work issue
 This is the same export `/export` produces — rendered automatically from THIS session. Do NOT ask the user to
 run `/export`.
 
@@ -82,17 +62,21 @@ private. Note in your final summary that a full transcript was attached.
    [ -f "$CONV" ] || CONV="$HOME/.claude/skills/dme-skills/scripts/transcript-to-md.mjs"
    [ -f "$CONV" ] || CONV="$HOME/.claude/skills/dme-cc/scripts/transcript-to-md.mjs"
    [ -f "$CONV" ] || CONV="$(find "$HOME/.claude" -name transcript-to-md.mjs 2>/dev/null | head -1)"
-   OUT="/tmp/chonchi-<WORK_ISSUE>-transcript.md"
-   node "$CONV" --out "$OUT"
+   SOURCE_TRANSCRIPT="$(cat "$HOME/.claude/dme/last-transcript.path")"
+   SESSION_KEY="$(printf '%s' "$SOURCE_TRANSCRIPT" | shasum -a 256 | cut -c1-16)"
+   OUT="/tmp/chonchi-<WORK_ISSUE>-transcript-<SESSION_KEY>.md"
+   node "$CONV" --file "$SOURCE_TRANSCRIPT" --out "$OUT"
    ```
-   - If it errors "could not identify THIS session's transcript", pass the recorded path explicitly:
-     `node "$CONV" --file "$(cat "$HOME/.claude/dme/last-transcript.path")" --out "$OUT"`.
+   - `SOURCE_TRANSCRIPT` must be the filename/path actually passed to the exporter. If its recorded path is
+     unavailable, locate the actual source first, then derive `SESSION_KEY` from that path before exporting.
    - If the converter truly can't be found or the output is empty, DON'T skip traceability — ask the user
      to run `/export` and attach the file manually.
 2. Verify + measure (do NOT edit/re-render after this): `test -s "$OUT" && wc -c < "$OUT"` → this is `<bytes>` (>0).
-3. Upload to `<WORK_ISSUE>` via the Linear MCP. Run prepare → PUT **back-to-back with nothing in between**
+3. List/inspect existing issue attachments first. If an attachment already has the exact deterministic
+   filename `chonchi-<WORK_ISSUE>-transcript-<SESSION_KEY>.md`, skip upload; otherwise upload it via the
+   Linear MCP. Run prepare → PUT **back-to-back with nothing in between**
    (the signed URL expires in 60s):
-   - `prepare_attachment_upload { issue: "<WORK_ISSUE>", filename: "chonchi-<WORK_ISSUE>-transcript.md", contentType: "text/markdown", size: <bytes>, title: "Claude Code transcript (chonchi)" }`
+   - `prepare_attachment_upload { issue: "<WORK_ISSUE>", filename: "chonchi-<WORK_ISSUE>-transcript-<SESSION_KEY>.md", contentType: "text/markdown", size: <bytes>, title: "Claude Code transcript (chonchi, <SESSION_KEY>)" }`
    - PUT the bytes, **single-quoting** every header from `uploadRequest.headers` verbatim (values like
      `Content-Disposition` contain double-quotes, so single-quote them to survive the shell; copy byte-for-byte):
      ```bash
@@ -101,9 +85,9 @@ private. Note in your final summary that a full transcript was attached.
        -w '%{http_code}' -o /dev/null -sS "<uploadRequest.url>"
      ```
      Confirm the printed code is 2xx. If it's 403/expired, re-run `prepare_attachment_upload` and PUT again.
-   - Only after a 2xx PUT: `create_attachment_from_upload { issue: "<WORK_ISSUE>", assetUrl: "<assetUrl>", title: "Claude Code transcript (chonchi)" }`
+   - Only after a 2xx PUT: `create_attachment_from_upload { issue: "<WORK_ISSUE>", assetUrl: "<assetUrl>", title: "Claude Code transcript (chonchi, <SESSION_KEY>)" }`
 
-## D) Add the direct GitHub branch/commit link
+## C) Add the direct GitHub branch/commit link
 So a nightly reviewer (codex/another agent) can read the transcript, find the code, and review it end-to-end.
 1. Compute the links (first script that exists; it reads the repo you're in):
    ```bash
@@ -117,54 +101,82 @@ So a nightly reviewer (codex/another agent) can read the transcript, find the co
    link is the reliable one — that's exactly the "if there is no branch, link the commit" fallback.
    (No script found? Derive it inline: `git remote get-url origin`, `git rev-parse --abbrev-ref HEAD`,
    `git rev-parse HEAD` → `https://github.com/<owner>/<repo>/tree/<branch>` and `…/commit/<sha>`.)
-2. Put those links in the **step-B comment** (already done above) AND add the branch/PR as a first-class Linear
-   link attachment so it's clickable from the issue's Links:
+2. Inspect the issue's existing Links first. If an identical PR, branch, or commit URL already exists, skip
+   it; otherwise add it as a first-class Linear link attachment so it is clickable from the issue's Links:
    - `save_issue { id: "<WORK_ISSUE>", links: [{ url: "<branch or PR url>", title: "<Branch: name / PR #n>" }] }`
-     (`links` is append-only — it won't clobber existing links). Use the PR url if there is one; otherwise the
-     branch url; otherwise the commit url.
+     (`links` is append-only — it won't clobber existing links). Use the PR URL if there is one; otherwise the
+     branch URL; otherwise the commit URL.
 
-## E) Refresh the parent epic's roll-up (only if there IS a parent epic)
+## D) Create or update the session handoff comment
+1. `list_comments` on the WORK ISSUE. The handoff comment must begin with exactly
+   `<!-- chonchi-session:<SESSION_KEY> -->`. Exclude every record with the current `<SESSION_KEY>` from
+   prior-session calculation; if an existing current-marker comment is present, update it in place
+   (`save_comment` with its `id`) rather than creating another one. For every *other* SESSION_KEY, retain
+   at most one marked record (the newest if malformed duplicates exist).
+2. The comment lets a reviewer (human or agent) get oriented without replaying the session. Include:
+   - **What shipped** — the change in 2–5 bullets (features/fixes, key files/areas touched).
+   - **Testing done** — what the user verified and how (so the reviewer knows what's already covered).
+   - **Review focus / risks** — where you most want eyes; anything intentionally left out or deferred.
+   - **Code** — the GitHub links from step C.
+   - **Actual vs estimate** — if the work issue has an `## Estimate`, close the loop. Derive this session's
+     hours from the transcript (first to last timestamp of real work, excluding breaks) only when measurable.
+     Read only the retained, unique marked records for other SESSION_KEYs; do not treat an arbitrary
+     `Actual:` comment as prior session data. Recompute cumulative actual as the sum of those other unique
+     `Session actual:` values plus the current session exactly once; do not sum historical cumulative values.
+     Then update/create the single current-marker comment. Use explicit fields:
+     `Estimate: 6–10 AI-h` (if present), `Session actual: ~9 AI-h`, and
+     `Cumulative actual: ~14 AI-h`. If either value cannot be measured, write `Session actual: not measured`
+     and/or `Cumulative actual: not measured` — never invent a number. Add one line explaining a material
+     estimate divergence.
+   - The actual lands HERE, on the work issue — never as a number written onto the epic (the epic only ever
+     gets the step-F roll-up).
+   - A line: _"Full session transcript attached below."_
+
+## E) Tag the WORK ISSUE `chonchi` (the success marker)
+Apply a Linear label named **`chonchi`** so humans and agents can filter for work that has been handed off —
+it means "transcript + branch link are on this issue." Do this only after B and C actually succeeded; if
+either failed, skip the tag and say so (the missing tag is itself the signal that it did not fully work).
+1. Ensure the label exists (it's a normal Linear label): `list_issue_labels { team: "<team>", name: "chonchi" }`.
+   If it's absent, create it once:
+   `create_issue_label { name: "chonchi", team: "<team>", color: "#5e6ad2", description: "Handed off for review by /chonchi — full transcript + branch/commit link attached" }`.
+2. Immediately before adding the label, re-fetch the WORK ISSUE and use its **fresh** labels. `save_issue`'s
+   `labels` param REPLACES the whole set, so pass the UNION — every freshly fetched label PLUS `chonchi`:
+   `save_issue { id: "<WORK_ISSUE>", labels: ["<fresh label 1>", "<fresh label 2>", …, "chonchi"] }`.
+   (If `chonchi` is already there, this is a no-op — fine.)
+
+## F) Refresh the parent epic's roll-up (only if there IS a parent epic)
 The epic **aggregates** its children; one child's handoff never overwrites the epic's own values. If the
 work issue is standalone, skip this step entirely.
 1. `get_issue` the parent epic and `list_issues { parentId }` (or read its children from the epic) so you
-   have every child work issue's state and labels. `list_comments` on the epic.
+   have every child work issue's state and labels. `list_comments` on the epic **and on every child**.
 2. Maintain **ONE roll-up comment**, identified by `<!-- chonchi-rollup -->` as its first line. If a
    comment containing that marker exists, UPDATE it in place (`save_comment` with that comment's `id`);
    otherwise create it. **Never post a second roll-up** — re-running `/chonchi` refreshes it, so repeated
    runs are safe by construction.
-3. Roll-up body: the marker line, then one row per child work issue — state · `Actual:` (read from that
-   child's step-B comment; `not measured` if absent) · handed off (`chonchi` label present) or not — then
-   a line `Total so far: ~N AI-h · K of M work issues handed off`, and a list of what remains.
+3. Roll-up body: the marker line, then one row per child work issue — state · `Cumulative actual:` from the
+   newest marked `<!-- chonchi-session:... -->` handoff record on that child (`not measured` if absent) ·
+   handed off only when the child has the `chonchi` label **and** is in a review/completed state — then
+   a line `Total so far: ~N AI-h · K of M work issues handed off` when every included actual is measurable,
+   otherwise `Total so far: not measured · K of M work issues handed off`, and a list of what remains.
 4. Move the EPIC to In Review **only if every child work issue is now handed off** (has the `chonchi`
-   label, counting this one — check, don't assume). Otherwise leave the epic's state, estimate, labels
-   and description exactly as they are.
+   label, counting this one — check, don't assume) **and** is in a review/completed state. Otherwise leave
+   the epic's state, estimate, labels and description exactly as they are.
 5. Never write an `Actual:` on the epic outside this roll-up, and never touch sibling work issues.
 
-## F) Tag the WORK ISSUE `chonchi` (the success marker)
-Apply a Linear label named **`chonchi`** so humans and agents can filter for work that has been handed off —
-it means "transcript + branch link are on this issue." Do this **last**, only after C and D actually
-succeeded; if either failed, skip the tag and say so (the missing tag is itself the signal that it didn't
-fully work).
-1. Ensure the label exists (it's a normal Linear label): `list_issue_labels { team: "<team>", name: "chonchi" }`.
-   If it's absent, create it once:
-   `create_issue_label { name: "chonchi", team: "<team>", color: "#5e6ad2", description: "Handed off for review by /chonchi — full transcript + branch/commit link attached" }`.
-2. Add it **without clobbering existing labels.** `save_issue`'s `labels` param REPLACES the whole set, so
-   pass the UNION — every label the issue already has (from the `get_issue` in step A) PLUS `chonchi`:
-   `save_issue { id: "<WORK_ISSUE>", labels: ["<existing label 1>", "<existing label 2>", …, "chonchi"] }`.
-   (If `chonchi` is already there, this is a no-op — fine.)
-
 ## Finish
-One short summary confirming each: **work issue In Review** ✅ · summary comment (with actual-vs-estimate)
-✅ · **full transcript attached** ✅ · **GitHub branch/commit link on the issue** ✅ · **epic roll-up
-refreshed** ✅ (or n/a for a standalone) · **`chonchi` label applied** ✅. Name the work issue you handed
+One short summary confirming each: **work issue In Review** ✅ · **full transcript attached** ✅ ·
+**GitHub branch/commit link on the issue** ✅ · session handoff comment (with `Session actual:` and
+`Cumulative actual:`) ✅ · **`chonchi` label applied** ✅ · **epic roll-up refreshed** ✅ (or n/a for a
+standalone). Name the work issue you handed
 off, whether the epic moved (and why), and call out anything that failed and what the user should do.
 
 ## Contract — how repeated and partial runs behave
 
 | Scenario | What happens |
 |---|---|
-| Standalone work issue | Steps A–D + F on it. No epic, no roll-up. |
-| Work issue under an epic | A–D + F on the work issue; the epic gets ONE refreshed roll-up (E) and moves to In Review only when its last child is handed off. |
-| Epic across repos, some packages done | Only handed-off children are In Review + tagged; siblings and the epic keep their state; the roll-up says what remains. |
-| `/chonchi` run twice on the same work issue | State move and label are no-ops, the step-B comment adds the cumulative actual, the roll-up is updated in place — no duplicates, nothing overwritten. |
+| Standalone work issue | Steps A–E on it. No epic, no roll-up. |
+| Work issue under an epic | A–E on the work issue; F refreshes ONE epic roll-up and moves the epic to In Review only when every child is tagged `chonchi` and in a review/completed state. |
+| Epic across repos, some packages done | Only children that are tagged `chonchi` and in a review/completed state count as handed off; siblings and the epic otherwise keep their state; the roll-up says what remains. |
+| `/chonchi` run twice in the same session | The current-key record is excluded from prior totals, then its single `<!-- chonchi-session:<SESSION_KEY> -->` comment is updated in place; its deterministic transcript attachment and identical link are reused, the session's hours are counted once, and the roll-up is updated in place. |
+| `/chonchi` run in a distinct later session | It creates one new marked handoff record and deterministic attachment, then adds that session's actual once to cumulative actual; the roll-up reads the newest marked record. |
 | Handed an epic ID | Refuses to hand the epic off; resolves to this session's work issue (asks only if it can't tell). |
